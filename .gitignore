@@ -1,0 +1,61 @@
+# ==========================================
+# Vionex Monorepo - Git Ignore Rules
+# Strictly prevents secret leakage and build bloat
+# ==========================================
+
+# Environment and Secret files (strictly ignored across all root and nested folders)
+.env
+.env.*
+.env*.local
+*.env
+*.local
+**/.env
+**/.env.*
+**/.env*.local
+**/*.env
+**/*.local
+
+# Whitelist environment templates so developers know what variables are required
+!.env.example
+!**/.env.example
+!**/.env.*.example
+
+# Node dependencies
+node_modules/
+**/node_modules/
+
+# Production build outputs & cache
+dist/
+**/dist/
+dist-ssr/
+**/dist-ssr/
+build/
+**/build/
+.output/
+**/.output/
+.cache/
+**/.cache/
+
+# Vercel deployment cache and build artifacts
+.vercel/
+**/.vercel/
+
+# Logs & debugging
+logs/
+**/logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

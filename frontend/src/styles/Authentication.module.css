@@ -1,0 +1,207 @@
+/* ==========================================================================
+   Vionex Authentication Page Styles
+   Understated, Human-Crafted, Focused & Accessible
+   ========================================================================== */
+
+.authContainer {
+  min-height: 100vh;
+  background-color: var(--vx-canvas);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  color: var(--vx-text-primary);
+}
+
+.authCard {
+  background-color: var(--vx-surface-card) !important;
+  border: 1px solid var(--vx-border-default) !important;
+  border-radius: var(--vx-radius-lg) !important;
+  box-shadow: var(--vx-shadow-lg) !important;
+  padding: 2.5rem !important;
+  width: 100% !important;
+  max-width: 440px !important;
+}
+
+.logoContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.75rem;
+}
+
+.logoAvatar {
+  background-color: var(--vx-primary) !important;
+  color: #ffffff !important;
+  width: 52px !important;
+  height: 52px !important;
+  margin-bottom: 0.85rem !important;
+  border-radius: var(--vx-radius-md) !important;
+}
+
+.title {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: var(--vx-text-primary) !important;
+  margin-bottom: 0.35rem !important;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  color: var(--vx-text-secondary) !important;
+  text-align: center;
+  font-size: 0.9375rem !important;
+  margin-bottom: 1.75rem !important;
+}
+
+/* Restrained Segmented Tab Switch */
+.toggleContainer {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 1.75rem;
+  border-radius: var(--vx-radius-md);
+  background-color: var(--vx-surface-base);
+  border: 1px solid var(--vx-border-subtle);
+  padding: 4px;
+}
+
+.toggleButton {
+  flex: 1 !important;
+  border-radius: var(--vx-radius-sm) !important;
+  padding: 8px 16px !important;
+  font-size: 0.9375rem !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.15s ease !important;
+  border: 1px solid transparent !important;
+}
+
+.toggleButtonActive {
+  background-color: var(--vx-surface-subtle) !important;
+  color: var(--vx-text-primary) !important;
+  border-color: var(--vx-border-default) !important;
+  box-shadow: var(--vx-shadow-sm) !important;
+}
+
+.toggleButtonInactive {
+  background-color: transparent !important;
+  color: var(--vx-text-secondary) !important;
+}
+
+.toggleButtonInactive:hover {
+  color: var(--vx-text-primary) !important;
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+.formContainer {
+  width: 100%;
+}
+
+.formFields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  margin-bottom: 1.75rem;
+}
+
+.inputField {
+  width: 100%;
+}
+
+.inputField :global(.MuiOutlinedInput-root) {
+  background-color: var(--vx-surface-base);
+  border-radius: var(--vx-radius-md);
+  color: var(--vx-text-primary);
+}
+
+.inputField :global(.MuiOutlinedInput-notchedOutline) {
+  border-color: var(--vx-border-default);
+}
+
+.inputField :global(.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline) {
+  border-color: var(--vx-border-strong);
+}
+
+.inputField :global(.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline) {
+  border-color: var(--vx-border-focus);
+}
+
+.inputField :global(.MuiInputLabel-root) {
+  color: var(--vx-text-secondary);
+}
+
+.inputField :global(.MuiInputLabel-root.Mui-focused) {
+  color: #60a5fa;
+}
+
+.inputField :global(.MuiFormHelperText-root) {
+  margin-left: 4px;
+}
+
+.submitButton {
+  background-color: var(--vx-primary) !important;
+  color: #ffffff !important;
+  padding: 10px 16px !important;
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  border-radius: var(--vx-radius-md) !important;
+  box-shadow: var(--vx-shadow-sm) !important;
+  transition: background-color 0.15s ease !important;
+  width: 100% !important;
+}
+
+.submitButton:hover {
+  background-color: var(--vx-primary-hover) !important;
+}
+
+.submitButton:disabled {
+  background-color: var(--vx-surface-subtle) !important;
+  color: var(--vx-text-muted) !important;
+}
+
+/* Alert Boxes */
+.alertMessage {
+  padding: 10px 14px;
+  border-radius: var(--vx-radius-md);
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alertError {
+  background-color: var(--vx-danger-bg);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+.alertSuccess {
+  background-color: var(--vx-success-bg);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #86efac;
+}
+
+.backToHome {
+  margin-top: 1.75rem;
+  text-align: center;
+}
+
+.backToHome a {
+  color: var(--vx-text-secondary);
+  font-size: 0.875rem;
+  transition: color 0.15s ease;
+}
+
+.backToHome a:hover {
+  color: var(--vx-text-primary);
+}
+
+@media (max-width: 480px) {
+  .authCard {
+    padding: 1.75rem 1.25rem !important;
+  }
+}
