@@ -6,27 +6,17 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 
-// 1. Determine active NODE_ENV (defaults to 'development' for local work)
+// 1. Load .env file for local development (in production cloud hosts like Vercel/Render, variables are provided via process.env)
+const envPath = path.resolve(rootDir, ".env");
+if (fs.existsSync(envPath)) {
+  dotenv.config({ path: envPath });
+} else {
+  dotenv.config();
+}
+
+// 2. Determine active NODE_ENV
 const nodeEnv = process.env.NODE_ENV || "development";
 process.env.NODE_ENV = nodeEnv;
-
-// 2. Load env files according to priority:
-//    a) .env.[mode].local (e.g. .env.development.local for private local overrides)
-//    b) .env.[mode]       (e.g. .env.development or .env.production)
-//    c) .env.local        (local overrides for all modes)
-//    d) .env              (general fallback)
-const envFiles = [
-  path.resolve(rootDir, `.env.${nodeEnv}.local`),
-  path.resolve(rootDir, `.env.${nodeEnv}`),
-  path.resolve(rootDir, ".env.local"),
-  path.resolve(rootDir, ".env"),
-];
-
-for (const file of envFiles) {
-  if (fs.existsSync(file)) {
-    dotenv.config({ path: file });
-  }
-}
 
 export const isDev = nodeEnv === "development";
 export const isProd = nodeEnv === "production";

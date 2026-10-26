@@ -1,12 +1,8 @@
 /**
  * Environment configuration for frontend API & WebSocket connections.
- * Automatically switches between Local Development and Production.
- *
- * In Development (`npm run dev`):
- *   Loads `.env.development` -> Uses local backend `http://localhost:8080`
- *
- * In Production (`npm run build` / Netlify):
- *   Loads `.env.production` -> Uses cloud backend `https://vionex-backend.onrender.com`
+ * 
+ * - Local Development: Automatically connects to `http://localhost:8080` (or `VITE_API_URL` in `.env`)
+ * - Production (Vercel / Netlify): Configured via `VITE_API_URL` in your platform's Environment Variables
  */
 
 const rawApiUrl = import.meta.env.VITE_API_URL;
