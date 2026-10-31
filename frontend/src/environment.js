@@ -1,4 +1,5 @@
 const rawApiUrl = import.meta.env.VITE_API_URL;
+const rawSocketUrl = import.meta.env.VITE_SOCKET_URL;
 const isDev = Boolean(import.meta.env.DEV);
 
 const isLocalhost =
@@ -19,5 +20,10 @@ if (rawApiUrl && rawApiUrl.trim()) {
 if (server.endsWith("/")) {
   server = server.replace(/\/+$/, "");
 }
+
+export const socketServer =
+  rawSocketUrl && rawSocketUrl.trim()
+    ? rawSocketUrl.trim().replace(/\/+$/, "")
+    : server;
 
 export default server;

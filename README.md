@@ -11,9 +11,10 @@
 [![Express 5](https://img.shields.io/badge/Express-5-000000.svg?logo=express&logoColor=white)](https://expressjs.com/)
 [![Socket.IO 4.8](https://img.shields.io/badge/Socket.IO-4.8-010101.svg?logo=socket.io&logoColor=white)](https://socket.io/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas%20%7C%20Mongoose-47A248.svg?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployment%20Ready-black.svg?logo=vercel&logoColor=white)](https://vercel.com/)
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Backend%20Live-black.svg?logo=vercel&logoColor=white)](https://vionex-rho.vercel.app/)
+[![Netlify Deployment](https://img.shields.io/badge/Netlify-Frontend%20Live-00C7B7.svg?logo=netlify&logoColor=white)](https://vionex.netlify.app/)
 
-[Explore Codebase](https://github.com/mirjaj-ajij-milon/Vionex) • [Report Issue](https://github.com/mirjaj-ajij-milon/Vionex/issues) • [Vercel Deployment](#-deploying-backend-to-vercel)
+[🌐 Live App (Netlify)](https://vionex.netlify.app/) • [⚡ Live API (Vercel)](https://vionex-rho.vercel.app/) • [📂 GitHub Repository](https://github.com/mirjaj-ajij-milon/Vionex)
 
 <br/>
 
@@ -36,7 +37,7 @@
 - [🌐 Deploying Frontend to Vercel or Netlify](#-deploying-frontend-to-vercel-or-netlify)
 - [🔌 Persistent Signaling Server (Socket.IO Guide)](#-persistent-signaling-server-socketio-guide)
 - [📡 REST API Reference](#-rest-api-reference)
-- [🧪 Automated Testing](#-automated-testing)
+- [🛠️ Build & Verification](#-build--verification)
 - [🏷️ Recommended GitHub Repository Settings](#-recommended-github-repository-settings)
 
 ---
@@ -270,11 +271,12 @@ We have simplified the environment setup so there is **zero confusion** and **ze
 | `TURN_USERNAME` | *(Optional)* | *(Optional)* | TURN username |
 | `TURN_CREDENTIAL` | *(Optional)* | *(Optional)* | TURN credential |
 
-### 2. Frontend Variables (`frontend/.env` / Vercel Dashboard)
+### 2. Frontend Variables (`frontend/.env` / Netlify / Vercel Dashboard)
 
-| Variable | Local Default | Production (Vercel / Netlify) | Purpose |
+| Variable | Local Default | Production (Netlify / Vercel) | Purpose |
 | :--- | :--- | :--- | :--- |
-| `VITE_API_URL` | `http://localhost:8080` | `https://your-backend.vercel.app` | Backend API & WebSocket endpoint |
+| `VITE_API_URL` | `http://localhost:8080` | `https://vionex-rho.vercel.app` | Backend REST API endpoint |
+| `VITE_SOCKET_URL` | *(Optional, uses VITE_API_URL)* | `https://your-signaling.onrender.com` | Persistent WebSocket server (Render/Railway) |
 
 ---
 
@@ -367,21 +369,19 @@ All protected endpoints require an `Authorization: Bearer <token>` HTTP header.
 
 ---
 
-## 🧪 Automated Testing
-
-Both backend and frontend feature automated test suites using the Node.js native test runner (`node:test`).
+## 🛠️ Build & Verification
 
 ```bash
-# Run all tests across the monorepo:
-npm test
+# Install dependencies across all packages:
+npm run install:all
 
-# Run backend unit & integration tests:
-npm run test:backend
+# Run backend development server (Port 8080):
+npm run dev:backend
 
-# Run frontend tests:
-npm run test:frontend
+# Run frontend development server (Port 5173):
+npm run dev:frontend
 
-# Verify frontend production build:
+# Build frontend production bundle:
 npm run build:frontend
 ```
 

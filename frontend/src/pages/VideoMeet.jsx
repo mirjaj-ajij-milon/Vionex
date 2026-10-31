@@ -25,9 +25,8 @@ import TuneIcon from "@mui/icons-material/Tune";
 import AddIcon from "@mui/icons-material/Add";
 import PersonIcon from "@mui/icons-material/Person";
 import CheckIcon from "@mui/icons-material/Check";
-import PanToolIcon from "@mui/icons-material/PanTool";
 import styles from "../styles/videoComponent.module.css";
-import server from "../environment";
+import server, { socketServer } from "../environment";
 
 const PEER_CONNECTION_CONFIG = {
   iceServers: [
@@ -1358,14 +1357,21 @@ export default function VideoMeetComponent() {
       setIsConnecting(true);
 
       const token = localStorage.getItem("token");
-      const socket = io(server, {
+      const socket = io(socketServer, {
         auth: { token: token || undefined },
         transports: ["websocket", "polling"],
         secure: window.location.protocol === "https:",
+        reconnectionAttempts: 5,
+        timeout: 10000,
       });
       socketRef.current = socket;
 
       socket.on("signal", handleSignal);
+
+      socket.on("connect_error", (err) => {
+        console.warn("[VideoMeet] Signaling connection error:", err.message);
+        setIsConnecting(false);
+      });
 
       socket.on("join-error", (errorMessage) => {
         setIsConnecting(false);
