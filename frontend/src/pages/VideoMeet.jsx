@@ -140,9 +140,8 @@ const RemoteVideoTile = memo(function RemoteVideoTile({ video }) {
 
       {/* Corner Mic Indicator */}
       <div
-        className={`${styles.micIndicatorCorner} ${
-          video.audio ? styles.micActive : styles.micMuted
-        }`}
+        className={`${styles.micIndicatorCorner} ${video.audio ? styles.micActive : styles.micMuted
+          }`}
       >
         {video.audio ? (
           <MicIcon style={{ fontSize: "15px" }} />
@@ -153,6 +152,131 @@ const RemoteVideoTile = memo(function RemoteVideoTile({ video }) {
     </div>
   );
 });
+
+// Compact Remote Peer Mini Card for mobile carousel
+const RemotePeerMiniCard = memo(function RemotePeerMiniCard({
+  peer,
+  isSpotlight,
+  onClick,
+}) {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el || !peer.stream) return;
+    el.srcObject = peer.stream;
+    el.muted = false;
+    const playPromise = el.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => { });
+    }
+  }, [peer.stream, peer.video]);
+
+  const hasVideoTrack =
+    peer.stream &&
+    peer.stream.getVideoTracks().length > 0 &&
+    peer.stream.getVideoTracks().some((t) => t.enabled);
+
+  const isVideoOn = Boolean(peer.video && hasVideoTrack);
+
+  return (
+    <div
+      className={`${styles.peerMiniCard} ${peer.audio ? styles.peerMiniSpeaking : ""
+        } ${isSpotlight ? styles.peerMiniSpotlight : ""}`}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      title={`Spotlight ${peer.username || "Peer"}`}
+    >
+      {isVideoOn ? (
+        <video ref={videoRef} autoPlay playsInline />
+      ) : (
+        <div className={styles.peerMiniAvatarWrapper}>
+          <div className={styles.peerMiniAvatar}>
+            {peer.username ? peer.username.charAt(0).toUpperCase() : "P"}
+          </div>
+        </div>
+      )}
+
+      {peer.audio && <span className={styles.peerMiniSpeakingDot} />}
+
+      <div className={styles.peerMiniBottomBar}>
+        <span className={styles.peerMiniNameText}>
+          {peer.username || "Participant"}
+        </span>
+        {peer.audio ? (
+          <MicIcon className={styles.peerMiniMicOn} />
+        ) : (
+          <MicOffIcon className={styles.peerMiniMicOff} />
+        )}
+      </div>
+    </div>
+  );
+});
+
+// Compact Local User Mini Card for mobile carousel
+function LocalPeerMiniCard({
+  localStream,
+  username,
+  video,
+  audio,
+  isSpotlight,
+  onClick,
+}) {
+  const miniVideoRef = useRef(null);
+
+  useEffect(() => {
+    const el = miniVideoRef.current;
+    if (!el || !localStream) return;
+    el.srcObject = localStream;
+    el.muted = true;
+    const playPromise = el.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => { });
+    }
+  }, [localStream, video]);
+
+  const hasVideoTrack =
+    localStream &&
+    localStream.getVideoTracks().length > 0 &&
+    localStream.getVideoTracks().some((t) => t.enabled);
+
+  const isVideoOn = Boolean(video && hasVideoTrack);
+
+  return (
+    <div
+      className={`${styles.peerMiniCard} ${audio ? styles.peerMiniSpeaking : ""
+        } ${isSpotlight ? styles.peerMiniSpotlight : ""}`}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      title="Spotlight You"
+    >
+      {isVideoOn ? (
+        <video ref={miniVideoRef} autoPlay muted playsInline />
+      ) : (
+        <div className={styles.peerMiniAvatarWrapper}>
+          <div className={styles.peerMiniAvatar}>
+            {username ? username.charAt(0).toUpperCase() : "U"}
+          </div>
+        </div>
+      )}
+
+      {audio && <span className={styles.peerMiniSpeakingDot} />}
+
+      <div className={styles.peerMiniBottomBar}>
+        <span className={styles.peerMiniNameText}>
+          {username || "You"} (Me)
+        </span>
+        {audio ? (
+          <MicIcon className={styles.peerMiniMicOn} />
+        ) : (
+          <MicOffIcon className={styles.peerMiniMicOff} />
+        )}
+      </div>
+    </div>
+  );
+}
 
 // Ready to Join (Lobby / Pre-Join Room)
 function Lobby({
@@ -259,9 +383,8 @@ function Lobby({
             <Tooltip title={video ? "Turn Camera Off (V)" : "Turn Camera On (V)"}>
               <IconButton
                 onClick={onToggleVideo}
-                className={`${styles.lobbyMediaBtn} ${
-                  video ? styles.lobbyMediaBtnActive : styles.lobbyMediaBtnInactive
-                }`}
+                className={`${styles.lobbyMediaBtn} ${video ? styles.lobbyMediaBtnActive : styles.lobbyMediaBtnInactive
+                  }`}
                 sx={{
                   width: "50px !important",
                   height: "50px !important",
@@ -296,9 +419,8 @@ function Lobby({
             <Tooltip title={audio ? "Mute Microphone (M)" : "Unmute Microphone (M)"}>
               <IconButton
                 onClick={onToggleAudio}
-                className={`${styles.lobbyMediaBtn} ${
-                  audio ? styles.lobbyMediaBtnActive : styles.lobbyMediaBtnInactive
-                }`}
+                className={`${styles.lobbyMediaBtn} ${audio ? styles.lobbyMediaBtnActive : styles.lobbyMediaBtnInactive
+                  }`}
                 sx={{
                   width: "50px !important",
                   height: "50px !important",
@@ -425,7 +547,14 @@ function ConnectingOverlay() {
 }
 
 // Left Navigation Rail for Desktop
-function LeftNavRail({ showChat, onToggleChat, participantCount, onCopyLink }) {
+function LeftNavRail({
+  showChat,
+  chatActiveTab,
+  onToggleChat,
+  onToggleParticipants,
+  participantCount,
+  onCopyLink,
+}) {
   return (
     <aside className={styles.leftRail}>
       <div className={styles.railTop}>
@@ -443,14 +572,19 @@ function LeftNavRail({ showChat, onToggleChat, participantCount, onCopyLink }) {
           <Tooltip title="In-Call Chat" placement="right">
             <IconButton
               onClick={onToggleChat}
-              className={`${styles.railBtn} ${showChat ? styles.activeNav : ""}`}
+              className={`${styles.railBtn} ${showChat && chatActiveTab === "chat" ? styles.activeNav : ""
+                }`}
             >
               <ChatIcon />
             </IconButton>
           </Tooltip>
 
           <Tooltip title={`Participants (${participantCount})`} placement="right">
-            <IconButton onClick={onToggleChat} className={styles.railBtn}>
+            <IconButton
+              onClick={onToggleParticipants}
+              className={`${styles.railBtn} ${showChat && chatActiveTab === "people" ? styles.activeNav : ""
+                }`}
+            >
               <PeopleIcon />
             </IconButton>
           </Tooltip>
@@ -579,15 +713,20 @@ function ChatPanel({
   onToggleExpand,
   currentUsername,
   onCopyLink,
+  activeTab = "chat",
+  onTabChange,
 }) {
-  const [activeTab, setActiveTab] = useState("chat");
+  const [internalTab, setInternalTab] = useState("chat");
+  const currentTab = onTabChange ? activeTab : internalTab;
+  const setTab = onTabChange || setInternalTab;
+
   const chatDisplayRef = useRef(null);
 
   useEffect(() => {
     if (chatDisplayRef.current) {
       chatDisplayRef.current.scrollTop = chatDisplayRef.current.scrollHeight;
     }
-  }, [messages, activeTab]);
+  }, [messages, currentTab]);
 
   const quickEmojis = ["❤️", "👍", "🚀", "⚡", "🔥", "👏"];
 
@@ -597,8 +736,9 @@ function ChatPanel({
       <div className={styles.chatHeaderTabs}>
         <div className={styles.tabsGroup}>
           <button
-            onClick={() => setActiveTab("chat")}
-            className={`${styles.tabBtn} ${activeTab === "chat" ? styles.activeTab : ""}`}
+            onClick={() => setTab("chat")}
+            className={`${styles.tabBtn} ${currentTab === "chat" ? styles.activeTab : ""}`}
+            type="button"
           >
             <ChatIcon style={{ fontSize: "16px" }} />
             <span>In-Call Chat</span>
@@ -606,8 +746,9 @@ function ChatPanel({
           </button>
 
           <button
-            onClick={() => setActiveTab("people")}
-            className={`${styles.tabBtn} ${activeTab === "people" ? styles.activeTab : ""}`}
+            onClick={() => setTab("people")}
+            className={`${styles.tabBtn} ${currentTab === "people" ? styles.activeTab : ""}`}
+            type="button"
           >
             <PeopleIcon style={{ fontSize: "16px" }} />
             <span>People</span>
@@ -756,19 +897,32 @@ function ChatPanel({
   if (isMobile) {
     return (
       <div
-        className={`${styles.mobileLiveThreadDrawer} ${
-          isExpanded ? styles.expandedDrawer : styles.collapsedDrawer
-        }`}
+        className={`${styles.mobileLiveThreadDrawer} ${isExpanded ? styles.expandedDrawer : styles.collapsedDrawer
+          }`}
       >
         <div className={styles.drawerGrabHandle} onClick={onToggleExpand} />
         <div className={styles.drawerHeader}>
           <span className={styles.drawerTitle}>
-            <ChatIcon style={{ fontSize: "16px", color: "#818cf8" }} />
-            Live Thread ({messages.length})
+            {currentTab === "people" ? (
+              <>
+                <PeopleIcon style={{ fontSize: "16px", color: "#818cf8" }} />
+                Participants ({participants.length})
+              </>
+            ) : (
+              <>
+                <ChatIcon style={{ fontSize: "16px", color: "#818cf8" }} />
+                Live Thread ({messages.length})
+              </>
+            )}
           </span>
-          <button onClick={onToggleExpand} className={styles.drawerExpandBtn} type="button">
-            {isExpanded ? "Collapse ▾" : "Expand ⤢"}
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <button onClick={onToggleExpand} className={styles.drawerExpandBtn} type="button">
+              {isExpanded ? "Collapse ▾" : "Expand ⤢"}
+            </button>
+            <IconButton onClick={onClose} className={styles.chatCloseBtn} size="small" style={{ padding: "4px" }}>
+              <CloseIcon style={{ fontSize: "18px" }} />
+            </IconButton>
+          </div>
         </div>
         {content}
       </div>
@@ -800,9 +954,8 @@ function ControlBar({
       <Tooltip title={audio ? "Mute Mic (M)" : "Unmute Mic (M)"}>
         <IconButton
           onClick={onToggleAudio}
-          className={`${styles.controlButton} ${
-            audio ? styles.btnAudioActive : styles.btnAudioInactive
-          }`}
+          className={`${styles.controlButton} ${audio ? styles.btnAudioActive : styles.btnAudioInactive
+            }`}
         >
           {audio ? <MicIcon /> : <MicOffIcon />}
         </IconButton>
@@ -812,9 +965,8 @@ function ControlBar({
       <Tooltip title={video ? "Turn Video Off (V)" : "Turn Video On (V)"}>
         <IconButton
           onClick={onToggleVideo}
-          className={`${styles.controlButton} ${
-            video ? styles.btnVideoActive : styles.btnVideoInactive
-          }`}
+          className={`${styles.controlButton} ${video ? styles.btnVideoActive : styles.btnVideoInactive
+            }`}
         >
           {video ? <VideocamIcon /> : <VideocamOffIcon />}
         </IconButton>
@@ -825,9 +977,8 @@ function ControlBar({
         <Tooltip title={screen ? "Stop Sharing Screen" : "Share Entire Screen"}>
           <IconButton
             onClick={onToggleScreen}
-            className={`${styles.controlButton} ${
-              screen ? styles.btnScreenActive : styles.btnScreenInactive
-            }`}
+            className={`${styles.controlButton} ${screen ? styles.btnScreenActive : styles.btnScreenInactive
+              }`}
           >
             {screen ? <StopScreenShareIcon /> : <ScreenShareIcon />}
           </IconButton>
@@ -839,9 +990,8 @@ function ControlBar({
         <Badge badgeContent={newMessages} max={99} color="error">
           <IconButton
             onClick={onToggleChat}
-            className={`${styles.controlButton} ${
-              showChat ? styles.btnChatActive : styles.btnChatInactive
-            }`}
+            className={`${styles.controlButton} ${showChat ? styles.btnChatActive : styles.btnChatInactive
+              }`}
           >
             <ChatIcon />
           </IconButton>
@@ -869,26 +1019,45 @@ function ControlBar({
 // Conference View (Handles Desktop Grid & Mobile Spotlight + Peers Carousel)
 function ConferenceView({
   localVideoRef,
+  localStream,
   username,
   video,
   audio,
   videos,
   isMobile,
   onCopyLink,
+  onOpenParticipants,
 }) {
+  const [selectedSpotlightId, setSelectedSpotlightId] = useState(null);
+
   // Mobile View: Spotlight Active Speaker + Horizontal Peers in Sync Carousel Strip
   if (isMobile) {
     const hasPeers = videos.length > 0;
-    const spotlightPeer = hasPeers ? videos[0] : null;
+    let spotlightPeer = null;
+    let isLocalSpotlight = false;
+
+    if (selectedSpotlightId === "local") {
+      isLocalSpotlight = true;
+    } else if (selectedSpotlightId) {
+      spotlightPeer = videos.find((p) => p.socketId === selectedSpotlightId);
+      if (!spotlightPeer) {
+        if (hasPeers) spotlightPeer = videos[0];
+        else isLocalSpotlight = true;
+      }
+    } else {
+      if (hasPeers) {
+        spotlightPeer = videos[0];
+      } else {
+        isLocalSpotlight = true;
+      }
+    }
 
     return (
       <div className={styles.mobileLayoutWrapper}>
         {/* Main Spotlight Video Stage */}
         <div className={styles.spotlightMainTile}>
-          {spotlightPeer ? (
-            <RemoteVideoTile video={spotlightPeer} />
-          ) : (
-            <div className={styles.remoteVideoWrapper}>
+          {isLocalSpotlight || !spotlightPeer ? (
+            <div className={`${styles.remoteVideoWrapper} ${audio ? styles.isSpeaking : ""}`}>
               <video ref={localVideoRef} autoPlay muted playsInline />
               {!video && (
                 <div className={styles.videoOffPlaceholder}>
@@ -903,9 +1072,8 @@ function ConferenceView({
                 <span className={styles.roleTag}>Host</span>
               </div>
               <div
-                className={`${styles.micIndicatorCorner} ${
-                  audio ? styles.micActive : styles.micMuted
-                }`}
+                className={`${styles.micIndicatorCorner} ${audio ? styles.micActive : styles.micMuted
+                  }`}
               >
                 {audio ? (
                   <MicIcon style={{ fontSize: "15px" }} />
@@ -914,6 +1082,8 @@ function ConferenceView({
                 )}
               </div>
             </div>
+          ) : (
+            <RemoteVideoTile video={spotlightPeer} />
           )}
 
           {/* Mobile Top Latency Chip */}
@@ -928,28 +1098,45 @@ function ConferenceView({
             <span className={styles.peersTitle}>
               PEERS IN SYNC ({videos.length + 1})
             </span>
-            <span className={styles.peersViewAll} onClick={onCopyLink}>
+            <span
+              className={styles.peersViewAll}
+              onClick={onOpenParticipants}
+              role="button"
+              tabIndex={0}
+            >
               View All ({videos.length + 1}) ›
             </span>
           </div>
 
           <div className={styles.peersCarousel}>
             {/* Local Video Mini Card */}
-            <div className={styles.peerMiniCard}>
-              <video ref={localVideoRef} autoPlay muted playsInline />
-              <div className={styles.peerMiniName}>{username || "You"} (Me)</div>
-            </div>
+            <LocalPeerMiniCard
+              localStream={localStream}
+              username={username}
+              video={video}
+              audio={audio}
+              isSpotlight={isLocalSpotlight}
+              onClick={() => setSelectedSpotlightId("local")}
+            />
 
             {/* Remote Participants */}
             {videos.map((peer) => (
-              <div key={peer.socketId} className={styles.peerMiniCard}>
-                <RemoteVideoTile video={peer} />
-                <div className={styles.peerMiniName}>{peer.username}</div>
-              </div>
+              <RemotePeerMiniCard
+                key={peer.socketId}
+                peer={peer}
+                isSpotlight={spotlightPeer?.socketId === peer.socketId}
+                onClick={() => setSelectedSpotlightId(peer.socketId)}
+              />
             ))}
 
             {/* Invite Peer Action Card */}
-            <div className={styles.peerInviteCard} onClick={onCopyLink} title="Invite Others">
+            <div
+              className={styles.peerInviteCard}
+              onClick={onCopyLink}
+              title="Invite Others"
+              role="button"
+              tabIndex={0}
+            >
               <AddIcon style={{ fontSize: "20px" }} />
               <span>Invite</span>
             </div>
@@ -992,9 +1179,8 @@ function ConferenceView({
         </div>
 
         <div
-          className={`${styles.micIndicatorCorner} ${
-            audio ? styles.micActive : styles.micMuted
-          }`}
+          className={`${styles.micIndicatorCorner} ${audio ? styles.micActive : styles.micMuted
+            }`}
         >
           {audio ? (
             <MicIcon style={{ fontSize: "15px" }} />
@@ -1032,7 +1218,7 @@ export default function VideoMeetComponent() {
   const [audioAvailable, setAudioAvailable] = useState(true);
   const [screenAvailable, setScreenAvailable] = useState(false);
 
-  const [video, setVideo] = useState(false);
+  const [video, setVideo] = useState(true);
   const [audio, setAudio] = useState(true);
   const [screen, setScreen] = useState(false);
 
@@ -1045,6 +1231,7 @@ export default function VideoMeetComponent() {
   );
 
   const [showChat, setShowChat] = useState(false);
+  const [chatActiveTab, setChatActiveTab] = useState("chat");
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const [newMessages, setNewMessages] = useState(0);
@@ -1151,8 +1338,8 @@ export default function VideoMeetComponent() {
         if (cancelled) return stopStreamTracks(stream);
         setVideoAvailable(true);
         setAudioAvailable(true);
-        stream.getVideoTracks().forEach((track) => (track.enabled = false));
-        setVideo(false);
+        stream.getVideoTracks().forEach((track) => (track.enabled = true));
+        setVideo(true);
         localStreamRef.current = stream;
         attachLocalStream();
       } catch (err) {
@@ -1551,13 +1738,42 @@ export default function VideoMeetComponent() {
     }
   }, [screen, replaceTracksOnPeers]);
 
+  const handleOpenParticipants = useCallback(() => {
+    setChatActiveTab("people");
+    setShowChat(true);
+    setIsChatExpanded(true);
+  }, []);
+
   const handleToggleChat = useCallback(() => {
     setShowChat((prev) => {
-      const next = !prev;
-      if (next) setNewMessages(0);
-      return next;
+      if (!prev) {
+        setNewMessages(0);
+        setChatActiveTab("chat");
+        return true;
+      }
+      if (chatActiveTab === "people") {
+        setChatActiveTab("chat");
+        return true;
+      }
+      return false;
     });
-  }, []);
+  }, [chatActiveTab]);
+
+  const handleToggleParticipants = useCallback(() => {
+    setShowChat((prev) => {
+      if (!prev) {
+        setChatActiveTab("people");
+        setIsChatExpanded(true);
+        return true;
+      }
+      if (chatActiveTab === "chat") {
+        setChatActiveTab("people");
+        setIsChatExpanded(true);
+        return true;
+      }
+      return false;
+    });
+  }, [chatActiveTab]);
 
   const handleSendMessage = useCallback(() => {
     if (!message.trim() || isSendingChat) return;
@@ -1675,7 +1891,9 @@ export default function VideoMeetComponent() {
         {!isMobile && (
           <LeftNavRail
             showChat={showChat}
+            chatActiveTab={chatActiveTab}
             onToggleChat={handleToggleChat}
+            onToggleParticipants={handleToggleParticipants}
             participantCount={videos.length + 1}
             onCopyLink={handleCopyLink}
           />
@@ -1698,12 +1916,14 @@ export default function VideoMeetComponent() {
           <main className={styles.conferenceContainer}>
             <ConferenceView
               localVideoRef={localVideoRef}
+              localStream={localStreamRef.current}
               username={username}
               video={video}
               audio={audio}
               videos={videos}
               isMobile={isMobile}
               onCopyLink={handleCopyLink}
+              onOpenParticipants={handleOpenParticipants}
             />
           </main>
 
@@ -1731,7 +1951,7 @@ export default function VideoMeetComponent() {
             message={message}
             onMessageChange={setMessage}
             onSend={handleSendMessage}
-            onClose={handleToggleChat}
+            onClose={() => setShowChat(false)}
             isSending={isSendingChat}
             onQuickEmoji={handleQuickEmoji}
             participants={allParticipants}
@@ -1740,6 +1960,8 @@ export default function VideoMeetComponent() {
             onToggleExpand={() => setIsChatExpanded((prev) => !prev)}
             currentUsername={username}
             onCopyLink={handleCopyLink}
+            activeTab={chatActiveTab}
+            onTabChange={setChatActiveTab}
           />
         )}
       </div>
