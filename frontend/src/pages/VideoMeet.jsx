@@ -1032,7 +1032,7 @@ export default function VideoMeetComponent() {
   const [audioAvailable, setAudioAvailable] = useState(true);
   const [screenAvailable, setScreenAvailable] = useState(false);
 
-  const [video, setVideo] = useState(true);
+  const [video, setVideo] = useState(false);
   const [audio, setAudio] = useState(true);
   const [screen, setScreen] = useState(false);
 
@@ -1151,6 +1151,8 @@ export default function VideoMeetComponent() {
         if (cancelled) return stopStreamTracks(stream);
         setVideoAvailable(true);
         setAudioAvailable(true);
+        stream.getVideoTracks().forEach((track) => (track.enabled = false));
+        setVideo(false);
         localStreamRef.current = stream;
         attachLocalStream();
       } catch (err) {
@@ -1585,10 +1587,12 @@ export default function VideoMeetComponent() {
   const handleJoin = useCallback(() => {
     if (!username.trim()) return;
     setAskForUsername(false);
-    setVideo(videoAvailable);
-    setAudio(audioAvailable);
-    connectToSocketServer(videoAvailable, audioAvailable);
-  }, [username, videoAvailable, audioAvailable, connectToSocketServer]);
+    const activeVideo = Boolean(video && videoAvailable);
+    const activeAudio = Boolean(audio && audioAvailable);
+    setVideo(activeVideo);
+    setAudio(activeAudio);
+    connectToSocketServer(activeVideo, activeAudio);
+  }, [username, video, audio, videoAvailable, audioAvailable, connectToSocketServer]);
 
   // Keyboard Shortcuts
   useEffect(() => {
