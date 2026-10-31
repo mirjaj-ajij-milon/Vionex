@@ -85,7 +85,7 @@ function stopStreamTracks(stream) {
 }
 
 // Presentational Sub-components
-const RemoteVideoTile = memo(function RemoteVideoTile({ video, isMainSpotlight = false }) {
+const RemoteVideoTile = memo(function RemoteVideoTile({ video }) {
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -887,7 +887,7 @@ function ConferenceView({
         {/* Main Spotlight Video Stage */}
         <div className={styles.spotlightMainTile}>
           {spotlightPeer ? (
-            <RemoteVideoTile video={spotlightPeer} isMainSpotlight={true} />
+            <RemoteVideoTile video={spotlightPeer} />
           ) : (
             <div className={styles.remoteVideoWrapper}>
               <video ref={localVideoRef} autoPlay muted playsInline />
@@ -1603,10 +1603,13 @@ export default function VideoMeetComponent() {
 
   // Cleanup on unmount
   useEffect(() => {
+    const activeConnections = connectionsRef.current;
     return () => {
       socketRef.current?.emit("leave-call");
       stopStreamTracks(localStreamRef.current);
-      Object.values(connectionsRef.current).forEach((peer) => peer.close());
+      if (activeConnections) {
+        Object.values(activeConnections).forEach((peer) => peer.close());
+      }
       socketRef.current?.disconnect();
     };
   }, []);

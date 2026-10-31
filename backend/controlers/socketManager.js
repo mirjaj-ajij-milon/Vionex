@@ -2,20 +2,18 @@ import { Server } from "socket.io";
 import { createHash } from "node:crypto";
 import { User } from "../models/user.model.js";
 
-// In-memory room state (single-instance architecture)
 const connection = {};
 const message = {};
 const timeOnline = {};
 
 const MAX_MESSAGES_PER_ROOM = 200;
-const MAX_PARTICIPANTS_PER_ROOM = 6; // Standard stability threshold for full-mesh WebRTC
+const MAX_PARTICIPANTS_PER_ROOM = 6;
 
 const hashToken = (token) => {
   if (typeof token !== "string") return "";
   return createHash("sha256").update(token).digest("hex");
 };
 
-// Utility to normalize room IDs (handles raw IDs or full URLs like http://localhost:5173/room-code)
 const normalizeRoomId = (rawPath) => {
   if (typeof rawPath !== "string") return "";
   try {
@@ -47,15 +45,17 @@ export const connectToSocket = (server, allowedOrigins = []) => {
         if (process.env.NODE_ENV !== "production" && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
           return callback(null, true);
         }
+        if (/^https:\/\/[a-zA-Z0-9_.-]+\.(vercel|netlify)\.app$/.test(cleanOrigin)) {
+          return callback(null, true);
+        }
         return callback(new Error(`Socket CORS blocked origin: ${origin}`));
       },
       methods: ["GET", "POST"],
       credentials: true,
     },
-    maxHttpBufferSize: 1e6, // 1MB payload ceiling
+    maxHttpBufferSize: 1e6,
   });
 
-  // Optional socket authentication middleware
   io.use(async (socket, next) => {
     try {
       const token =
@@ -82,12 +82,11 @@ export const connectToSocket = (server, allowedOrigins = []) => {
       return next();
     } catch (err) {
       console.warn("Socket auth check error:", err.message);
-      return next(); // Still allow connection as guest if room permits
+      return next();
     }
   });
 
   io.on("connection", (socket) => {
-    // ---- JOIN CALL ----
     socket.on("join-call", (rawPath, clientUsername, video = true, audio = true) => {
       try {
         const roomId = normalizeRoomId(rawPath);
@@ -96,7 +95,6 @@ export const connectToSocket = (server, allowedOrigins = []) => {
           return socket.emit("join-error", "Invalid meeting room code.");
         }
 
-        // Authoritative display name (authenticated name overrides client-supplied parameter)
         const verifiedName = socket.authenticatedUser?.name || sanitizeUsername(clientUsername, "Participant");
 
         if (!connection[roomId]) {
@@ -104,13 +102,11 @@ export const connectToSocket = (server, allowedOrigins = []) => {
         }
 
         const roomUsers = connection[roomId];
-
-        // Check full-mesh capacity constraint
         const isExistingMember = roomUsers.some((u) => u.id === socket.id);
         if (!isExistingMember && roomUsers.length >= MAX_PARTICIPANTS_PER_ROOM) {
           return socket.emit(
             "join-error",
-            `Room is full. Maximum ${MAX_PARTICIPANTS_PER_ROOM} participants allowed in full-mesh mode.`
+            `Room is full. Maximum ${MAX_PARTICIPANTS_PER_ROOM} participants allowed.`
           );
         }
 
@@ -135,10 +131,8 @@ export const connectToSocket = (server, allowedOrigins = []) => {
         timeOnline[socket.id] = new Date();
         socket.join(roomId);
 
-        // Notify room members
         io.in(roomId).emit("user-joined", socket.id, connection[roomId], verifiedName);
 
-        // Send existing room chat history to newcomer
         if (message[roomId] && Array.isArray(message[roomId])) {
           message[roomId].forEach((msg) => {
             socket.emit("chat-message", msg.data, msg.sender, msg["socket-id-sender"]);
@@ -150,23 +144,18 @@ export const connectToSocket = (server, allowedOrigins = []) => {
       }
     });
 
-    // ---- SECURE WEBRTC SIGNALING ----
     socket.on("signal", (toId, signalMessage) => {
       try {
         if (!toId || typeof toId !== "string" || !signalMessage) return;
 
         const currentRoomId = socket.roomId;
-        if (!currentRoomId || !connection[currentRoomId]) {
-          return; // Sender has not joined any room
-        }
+        if (!currentRoomId || !connection[currentRoomId]) return;
 
-        // Security check: verify both sender and target exist in the same room
         const roomMembers = connection[currentRoomId];
         const isSenderInRoom = roomMembers.some((u) => u.id === socket.id);
         const isTargetInRoom = roomMembers.some((u) => u.id === toId);
 
         if (!isSenderInRoom || !isTargetInRoom) {
-          console.warn(`Blocked unauthorized signal from ${socket.id} to ${toId}`);
           return;
         }
 
@@ -176,7 +165,6 @@ export const connectToSocket = (server, allowedOrigins = []) => {
       }
     });
 
-    // ---- AUTHORIZED CHAT MESSAGES ----
     socket.on("chat-message", (data) => {
       try {
         if (typeof data !== "string" || !data.trim()) return;
@@ -184,7 +172,6 @@ export const connectToSocket = (server, allowedOrigins = []) => {
         const roomId = socket.roomId;
         if (!roomId || !connection[roomId]) return;
 
-        // Derive verified sender identity from server-side room registry
         const participant = connection[roomId].find((u) => u.id === socket.id);
         if (!participant) return;
 
@@ -213,7 +200,6 @@ export const connectToSocket = (server, allowedOrigins = []) => {
       }
     });
 
-    // ---- MEDIA CONTROLS TOGGLE ----
     socket.on("toggle-audio", (payload) => {
       try {
         const roomId = socket.roomId;
@@ -254,7 +240,6 @@ export const connectToSocket = (server, allowedOrigins = []) => {
       }
     });
 
-    // ---- LEAVE CALL EXPLICIT EVENT ----
     socket.on("leave-call", () => {
       try {
         const roomId = socket.roomId;
@@ -274,7 +259,6 @@ export const connectToSocket = (server, allowedOrigins = []) => {
       }
     });
 
-    // ---- DISCONNECT ----
     socket.on("disconnect", () => {
       try {
         const roomId = socket.roomId;
@@ -287,7 +271,6 @@ export const connectToSocket = (server, allowedOrigins = []) => {
             delete message[roomId];
           }
         } else {
-          // Fallback scan across all active rooms
           for (const [rId, persons] of Object.entries(connection)) {
             if (persons.some((u) => u.id === socket.id)) {
               io.in(rId).emit("user-left", socket.id);
