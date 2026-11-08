@@ -44,10 +44,19 @@ const corsOptions = {
 
 app.set("port", config.port);
 app.use(cors(corsOptions));
-app.use(express.json({ limit: "40kb" }));
-app.use(express.urlencoded({ limit: "40kb", extended: true }));
 
 const io = connectToSocket(server, config.allowedOrigins);
+
+// Forward Socket.IO polling requests directly to the Socket.IO engine before body parsers
+app.use((req, res, next) => {
+  if (req.path.startsWith("/socket.io") || req.url.startsWith("/socket.io")) {
+    return io.engine.handleRequest(req, res);
+  }
+  next();
+});
+
+app.use(express.json({ limit: "40kb" }));
+app.use(express.urlencoded({ limit: "40kb", extended: true }));
 
 app.use(async (req, res, next) => {
   if (req.path === "/health" || req.path === "/") {
