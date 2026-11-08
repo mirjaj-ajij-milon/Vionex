@@ -261,7 +261,7 @@ We have simplified the environment setup so there is **zero confusion** and **ze
 
 ### 1. Backend Variables (`backend/.env` / Vercel Dashboard)
 
-| Variable | Local Default | Production (Vercel / Render) | Purpose |
+| Variable | Local Default | Production (Vercel) | Purpose |
 | :--- | :--- | :--- | :--- |
 | `NODE_ENV` | `development` | `production` | Environment mode |
 | `PORT` | `8080` | `8080` *(or auto-assigned)* | Server listening port |
@@ -275,8 +275,8 @@ We have simplified the environment setup so there is **zero confusion** and **ze
 
 | Variable | Local Default | Production (Netlify / Vercel) | Purpose |
 | :--- | :--- | :--- | :--- |
-| `VITE_API_URL` | `http://localhost:8080` | `https://vionex-rho.vercel.app` | Backend REST API endpoint |
-| `VITE_SOCKET_URL` | *(Optional, uses VITE_API_URL)* | `https://your-signaling.onrender.com` | Persistent WebSocket server (Render/Railway) |
+| `VITE_API_URL` | `http://localhost:8080` | `https://vionex-rho.vercel.app` | Main Backend REST API endpoint |
+| `VITE_SOCKET_URL` | *(Optional, uses VITE_API_URL)* | *(Optional dedicated signaling host)* | Real-time signaling server (defaults to main Vercel backend) |
 
 ---
 
@@ -348,7 +348,7 @@ The Vionex backend is optimized for **Vercel Serverless Functions**.
    - `NODE_ENV` = `production`
    - `MONGO_URL` = your MongoDB Atlas connection string
    - `CLIENT_ORIGIN` = your deployed frontend URL
-5. Click **"Create Web Service"**. Render provides a persistent WebSocket signaling URL (e.g. `https://vionex-backend.onrender.com`).
+5. Click **"Create Web Service"**. Provide that URL as `VITE_SOCKET_URL` if you run dedicated signaling; otherwise, the frontend automatically defaults all API and signaling traffic to the main Vercel backend (`https://vionex-rho.vercel.app`).
 
 ---
 
