@@ -98,7 +98,7 @@ Environment settings are controlled via Vite environment variables. Reference `.
 
 | Variable | Development Default | Production Default (Netlify) | Description |
 | :--- | :--- | :--- | :--- |
-| `VITE_API_URL` | `http://localhost:8080` | `https://vionex-backend.onrender.com` | Base URL for REST API & WebSockets |
+| `VITE_API_URL` | `http://localhost:8080` | `https://vionex-rho.vercel.app` | Base URL for REST API & WebSockets |
 
 To set up your local development environment:
 ```bash
