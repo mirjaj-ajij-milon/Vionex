@@ -1,8 +1,7 @@
-# Netlify Configuration for Vionex Frontend
+# Netlify Configuration for Vionex Monorepo Root
 [build]
-  base = "frontend"
-  publish = "dist"
-  command = "npm run build"
+  command = "npm --prefix frontend run build"
+  publish = "frontend/dist"
 
 [build.environment]
   VITE_API_URL = "https://vionex-rho.vercel.app"
