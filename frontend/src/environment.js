@@ -1,19 +1,13 @@
 /**
  * Environment configuration for frontend API & WebSocket connections.
  * 
- * Main Production Backend: Vercel (https://vionex-rho.vercel.app)
- * Local Development: http://localhost:8080 (or custom VITE_API_URL)
- * 
- * Legacy Render URLs (onrender.com) are strictly filtered out to prevent
- * accidental connection to deprecated/inactive Render backend instances.
+ * Supports:
+ * - Render Backend (Full Stack: REST API + Persistent WebSocket Signaling)
+ * - Vercel Backend (REST API) + Dedicated Signaling Server (Render/Railway)
+ * - Local Development (http://localhost:8080)
  */
 
-const MAIN_VERCEL_BACKEND = "https://vionex-rho.vercel.app";
-
-const isRenderUrl = (url) => {
-  if (!url || typeof url !== "string") return false;
-  return /render\.com/i.test(url);
-};
+const DEFAULT_PRODUCTION_API = "https://vionex-rho.vercel.app";
 
 const isLocalUrl = (url) => {
   if (!url || typeof url !== "string") return false;
@@ -29,26 +23,21 @@ const isLocalhost =
   (window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1");
 
-let server = MAIN_VERCEL_BACKEND;
+let server = DEFAULT_PRODUCTION_API;
 
 if (isDev || isLocalhost) {
   // Local development / local preview
-  if (rawApiUrl && rawApiUrl.trim() && !isRenderUrl(rawApiUrl)) {
+  if (rawApiUrl && rawApiUrl.trim()) {
     server = rawApiUrl.trim();
   } else {
     server = "http://localhost:8080";
   }
 } else {
   // Production / Deployed environment (Netlify, Vercel, etc.)
-  if (
-    rawApiUrl &&
-    rawApiUrl.trim() &&
-    !isRenderUrl(rawApiUrl) &&
-    !isLocalUrl(rawApiUrl)
-  ) {
+  if (rawApiUrl && rawApiUrl.trim() && !isLocalUrl(rawApiUrl)) {
     server = rawApiUrl.trim();
   } else {
-    server = MAIN_VERCEL_BACKEND;
+    server = DEFAULT_PRODUCTION_API;
   }
 }
 
@@ -56,10 +45,10 @@ if (server.endsWith("/")) {
   server = server.replace(/\/+$/, "");
 }
 
+// Socket server: Use VITE_SOCKET_URL if explicitly provided; otherwise defaults to server
 export const socketServer =
   rawSocketUrl &&
   rawSocketUrl.trim() &&
-  !isRenderUrl(rawSocketUrl) &&
   (!isLocalUrl(rawSocketUrl) || isLocalhost || isDev)
     ? rawSocketUrl.trim().replace(/\/+$/, "")
     : server;

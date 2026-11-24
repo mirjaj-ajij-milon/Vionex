@@ -107,8 +107,9 @@ app.use((err, req, res, next) => {
 const start = async () => {
   try {
     await connectDB();
-    server.listen(config.port, () => {
+    server.listen(config.port, "0.0.0.0", () => {
       console.log(`[Vionex Backend] Running on port ${config.port} (${config.env})`);
+      console.log(`[Vionex Backend] Health check: http://0.0.0.0:${config.port}/health`);
     });
   } catch (err) {
     console.error("[Vionex Backend] Failed to start server:", err.message);

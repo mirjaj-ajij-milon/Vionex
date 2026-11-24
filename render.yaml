@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: vionex-backend
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: CLIENT_ORIGIN
+        value: https://vionex.netlify.app
+      - key: MONGO_URL
+        sync: false
+
